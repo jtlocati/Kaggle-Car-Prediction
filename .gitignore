@@ -4,3 +4,7 @@ CLAUDE.md
 index.html
 NOTE.md
 __pycache__
+data/raw/
+data/external/
+outputs/
+.ipynb_checkpoints/
