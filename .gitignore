@@ -1,1 +1,6 @@
 .venv
+CLAUDE.md
+.env
+index.html
+NOTE.md
+__pycache__
