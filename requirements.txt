@@ -6,3 +6,4 @@ lightgbm==4.6.0
 scipy==1.17.1
 catboost==1.2.10
 kaggle
+catboost==1.2.10
