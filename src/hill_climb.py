@@ -17,3 +17,18 @@ MIN_GAIN = 0.0000005
 FOLDS_TO_WIN = 7
 
 
+#load info
+library = loadLib()
+predictions = library["y"]
+fold = library["fold"]
+oof_table = library["oof_table"]
+test_table = library["test_table"]
+model_names = list(oof_table.columns)
+fold_nums = sorted(set(fold)) #[0]->9
+
+#regularise models so that col=models && rows=ppl
+
+oof_RegTable = oof_table[model_names].to_numpy()
+test_RegTable = test_table[model_names].to_numpy()
+print(f"models regularised")
+
