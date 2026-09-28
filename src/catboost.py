@@ -99,4 +99,19 @@ for fold_num in fold_to_run:
         task_type=ask_type,
         thread_count=-1,            
         verbose=250,                
-    )
+    )    )
+
+    CATBOOST.fit(train_pool, eval_set=valid_pool, use_best_model=True)
+
+    #define prediction to be the Will_Buy_EV
+    oof_pred[is_valid] = CATBOOST.predict_proba(valid_pool)[:,1]
+    test_pred = test_pred + CATBOOST.predict_proba(test_pool)[:, 1]
+
+    auc = roc_auc_score(CLASSIFICATION[is_valid], oof_pred[is_valid])
+    foldAUC.append(auc)
+
+
+#prediction are given on the full set, ,ust average them:
+test_pred = test_pred / len(fold_to_run)
+
+
