@@ -6,13 +6,14 @@ from scipy.stats import rankdata
 from sklearn.metrics import roc_auc_score
 from src import paths
 from src.regularise import ID_COL, TARGET_COL, FOLD_COL, loadLib
+from tqdm import tqdm 
 
 #model sonstants
 
 MODEL_NAME = "catboost"
 
-#keep false for now
-QICK_CHK = True
+#True => train on only one fold
+QICK_CHK = False
 
 USE_GPU = False
 SEED=42
@@ -74,7 +75,7 @@ else:
     fold_to_run = fold_numbers
 
 foldAUC=[]
-for fold_num in fold_to_run:
+for fold_num in tqdm(fold_to_run, desc="Training folds", unit="fold"):
     is_valid = (fold == fold_num)
     is_train = ~is_valid
 
