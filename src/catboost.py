@@ -12,7 +12,7 @@ from src.regularise import ID_COL, TARGET_COL, FOLD_COL, loadLib
 MODEL_NAME = "catboost"
 
 #keep false for now
-QICK_CHK = False
+QICK_CHK = True
 
 USE_GPU = False
 SEED=42
@@ -40,7 +40,7 @@ for col in TRAIN_SET.columns:
     #exclude vital/used components
     if col == ID_COL or col == TARGET_COL or col == FOLD_COL:
         continue
-    if type(TRAIN_SET[col]) is int or type(TRAIN_SET[col]) is float:
+    if pandas.api.types.is_numeric_dtype(TRAIN_SET[col]):
         int_cols.append(col)
     else:
         text_cols.append(col)
@@ -68,9 +68,7 @@ test_pool = Pool(X_test, cat_features=cat_cols)
 
 #TRAIN MODEL => train on 9, test on one fold
 
-TestLimit = True
-
-if TestLimit:
+if QICK_CHK:
     fold_to_run = [0]
 else:
     fold_to_run = fold_numbers
@@ -110,10 +108,12 @@ for fold_num in fold_to_run:
     auc = roc_auc_score(CLASSIFICATION[is_valid], oof_pred[is_valid])
     foldAUC.append(auc)
 
-
+    print(f"FOLD {fold_num}: AUC {auc:.6f}")  
 #prediction are given on the full set, ,ust average them:
 test_pred = test_pred / len(fold_to_run)
-
+if QICK_CHK:
+    print(f"Quick check done: fold 0 AUC {foldAUC[0]:.6f}")
+    raise SystemExit
 
 #save OOF and test predictions
 paths.CATBOOST_MODED_DIR.mkdir(parents=True, exist_ok=True)
@@ -124,7 +124,7 @@ test_frame.to_csv(paths.CATBOOST_MODED_DIR / f"{MODEL_NAME}_test.csv", index=Fal
 
 overallAUC = roc_auc_score(CLASSIFICATION, oof_pred)
 print(f"Results saved to {paths.CATBOOST_MODED_DIR}")
-
+print(f"{MODEL_NAME} OOF AUC: {overallAUC:.6f}") 
 #compare new results to old results
 library = loadLib()
 
@@ -155,8 +155,9 @@ BlendEightTeen = (publicsum + cat_ranks) / (len(public_names) + 1)
 correation = numpy.corrcoef(cat_ranks, blend_17)[0, 1]
 
 folds_won = 0
+print(f"Correlation with the 17-model blend: {correation:.5f}")
 print("fold | blend of 17 | blend of 18 | change")
-for fol_num in fold_numbers:
+for fold_num in fold_numbers:
     in_fold = (fold == fold_num)
     auc_17 = roc_auc_score(CLASSIFICATION[in_fold], blend_17[in_fold])
     auc_18 = roc_auc_score(CLASSIFICATION[in_fold], BlendEightTeen[in_fold])

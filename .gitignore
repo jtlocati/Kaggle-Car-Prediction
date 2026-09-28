@@ -10,3 +10,4 @@ docs
 outputs/
 .ipynb_checkpoints/
 .kaggle
+catboost_info/

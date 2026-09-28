@@ -131,7 +131,7 @@ def loadLib():
 
     for model in COUS_MODELS:
         oof_path = paths.CATBOOST_MODED_DIR / f"{model}_oof.csv"
-        test_path = paths.CATBOOST_MODED_DIR / f"{model}.test.csv"
+        test_path = paths.CATBOOST_MODED_DIR / f"{model}_test.csv"
 
         if oof_path.exists() == False or test_path.exists() == False:
             print(f"SKIPPED: {model}: NOT trained")
