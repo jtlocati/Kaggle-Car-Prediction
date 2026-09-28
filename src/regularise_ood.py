@@ -63,3 +63,67 @@ def allignIDS(frame, wanted_ID, col, source_name):
         missing_count = int(numpy.isnan(properValues).sum())
         raise ValueError(f"{source_name} has {missing_count} missing IDs for col {col}")
     return properValues
+
+#takes a table with id and prediction => the col name 
+def SlimToPredictions(frame, source):
+    other_cols = []
+    for i in frame.columns:
+        if i != ID_COL:
+            other_cols.append(i)
+
+    if len(other_cols) != 1:
+        raise ValueError(f"{source}:  expected id + 1 column, got {list(frame.columns)}")
+    return other_cols[0]
+
+#return a coherent table with all the info that we need
+def loadLib():
+    #extract folds from megayak
+    sixViews = pandas.read_csv(paths.SIX_VIEWS_DIR / "oor_six_views.csv")
+    train_ids = sixViews[ID_COL].to_numpy()
+    predictions = sixViews[TARGET_COL].to_numpy(dtype=int)
+    fold = sixViews[FOLD_COL].to_numpy(dtype=int)
+
+    #draw from kaggles sample submission so we can format properly
+    sample_sub = pandas.read_csv(paths.RAW_DIR / "sample_submission.csv")
+    test_ids = sample_sub[ID_COL].to_numpy()
+
+    #cread empty dictionarys to hold the procution of the two drawn librarys
+    #{model_name: array of rnaked }
+    oof_by_model = {}
+    test_by_model = {}
+
+    #regularise the najiagma models
+    for model, file in  NAJIAMA_PAIRS.items():
+        oof_file = file[0]
+        test_file = file[1]
+
+        oof_table = pandas.read_csv(paths.NAJIAMA_DIR /oof_file)
+        test_table = pandas.read_csv(paths.NAJIAMA_DIR / test_file)
+
+        oof_cols = SlimToPredictions(oof_table, oof_file)
+        test_cols = SlimToPredictions(test_table, test_file)
+
+        raw_oof = allignIDS(oof_table, train_ids, oof_cols, oof_file)
+        raw_test = allignIDS(test_table, test_ids, test_cols, test_file)
+
+        #store ranked and regularised information
+        oof_by_model[model] = rankTo01(raw_oof)
+        test_by_model[model] = rankTo01(raw_test)
+
+    #regularise six view tables
+    for file, col_name in SIX_VIEWS_TABLES.items():
+        oof_file = file[0]
+        test_file = file[1]
+
+        oof_frame = pandas.read_csv(paths.SIX_VIEWS_DIR / oof_file)
+        test_frame = pandas.read_csv(paths.SIX_VIEWS_DIR / test_file)
+
+        for col in col_name:
+            raw_oof = allignIDS(oof_frame, train_ids, col, oof_file)
+            raw_test = allignIDS(test_frame, test_ids, col, test_file)
+            oof_by_model[col] = rankTo01(raw_oof)
+            test_by_model[col] = rankTo01(raw_test)
+            print(f"loaded col: {col}")
+
+    #return coherent list
+    return {"y": predictions, "fold": fold, "train_ids": train_ids, "test_ids": test_ids, "oof_table": oof_table, "test_table": test_table}
