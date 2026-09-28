@@ -99,7 +99,7 @@ for fold_num in fold_to_run:
         task_type=ask_type,
         thread_count=-1,            
         verbose=250,                
-    )    )
+    )
 
     CATBOOST.fit(train_pool, eval_set=valid_pool, use_best_model=True)
 
@@ -115,3 +115,9 @@ for fold_num in fold_to_run:
 test_pred = test_pred / len(fold_to_run)
 
 
+#save OOF and test predictions
+paths.CATBOOST_MODED_DIR.mkdir(parents=True, exist_ok=True)
+oof_frame = pandas.DataFrame({ID_COL: TRAIN_SET[ID_COL], MODEL_NAME: oof_pred})
+test_frame = pandas.DataFrame({ID_COL: TEST_SET[ID_COL], MODEL_NAME: test_pred})
+oof_frame.to_csv(paths.CATBOOST_MODED_DIR / f"{MODEL_NAME}_oof.csv", index=False)
+test_frame.to_csv(paths.CATBOOST_MODED_DIR / f"{MODEL_NAME}_test.csv", index=False)
