@@ -78,7 +78,7 @@ def SlimToPredictions(frame, source):
 #return a coherent table with all the info that we need
 def loadLib():
     #extract folds from megayak
-    sixViews = pandas.read_csv(paths.SIX_VIEWS_DIR / "oor_six_views.csv")
+    sixViews = pandas.read_csv(paths.SIX_VIEWS_DIR / "oof_six_views.csv")
     train_ids = sixViews[ID_COL].to_numpy()
     predictions = sixViews[TARGET_COL].to_numpy(dtype=int)
     fold = sixViews[FOLD_COL].to_numpy(dtype=int)
