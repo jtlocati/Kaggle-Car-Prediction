@@ -119,3 +119,37 @@ for fold_number in tqdm(fold_nums, desc="Nested folds", unit="fold"):
     for _, row in nested.iterrows():
         print(f"  {int(row['fold'])}  | {row['equal_auc']:.6f} | {row['hill_auc']:.6f} | {row['change']:+.7f}")
     print(f"Hill climbing won {folds_won}/10 folds, mean change {mean_change:+.7f}")
+
+#take decided weights and run them once on each row so we can use for the test set 
+
+print(f"final hillclimb for all models: ")
+final_weights = HillClimb(oof_RegTable, predictions, model_names)
+
+print(f"final weights")
+weightsFIN = []
+for name, weight in zip(model_names, final_weights):
+    weightsFIN.append({"model": name, "weight": weight})
+weightTable = pandas.DataFrame(weightsFIN).sort_values("Weight", ascending=False)
+for _, row in weightTable.iterrows():
+    if row["weight"] > 0:
+        print(f"{row['weight']:.3f}  {row['model']}")
+
+
+equal_oof_auc = roc_auc_score(predictions, oof_RegTable @ Stage1)
+hill_oof_auc = roc_auc_score(predictions, oof_RegTable @ final_weights)
+print(f"\nOOF AUC on all rows: equal {equal_oof_auc:.7f} | hill {hill_oof_auc:.7f}")
+print("(this hill number is optimistic; trust the nested result above)")
+
+
+#build submission and pick one
+hill_test = test_RegTable @ final_weights   # each test row: weighted sum of the models' ranks
+
+paths.OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+pandas.DataFrame({ID_COL: library["test_ids"], TARGET_COL: hill_test}).to_csv(paths.OUTPUTS_DIR / "submission_hill.csv", index=False)
+weightTable.to_csv(paths.OUTPUTS_DIR / "stage3_weights.csv", index=False)
+nested.to_csv(paths.OUTPUTS_DIR / "stage3_nested.csv", index=False)
+
+if folds_won >= FOLDS_TO_WIN and mean_change > 0:
+    print(f"\nVERDICT: hill climbing passed ({folds_won}/10 folds). Submit outputs/submission_hill.csv")
+else:
+    print(f"\nVERDICT: hill climbing did NOT pass ({folds_won}/10 folds). Keep the Stage 1 equal blend.")
