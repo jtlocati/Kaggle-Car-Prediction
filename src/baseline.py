@@ -24,7 +24,7 @@ def ScoreByFold(predictions, y, fold, fold_ints):
 
     fold_aucs = []
     for fold_number in fold_ints:
-        in_fold = (fold == fold_ints)
+        in_fold = (fold == fold_number)
         auc = roc_auc_score(y[in_fold], predictions[in_fold])
         fold_aucs.append(auc)
     return overallAUC, fold_aucs
@@ -37,7 +37,7 @@ for model in model_names:
 
     row = {"model": model, "oof_auc": overallAUC}
     for fold_num, auc in zip(fold_ints, foldaucs):
-        row[f"fold{fold_ints}"] = auc
+        row[f"fold{fold_num}"] = auc
 
     report_rows.append(row)
 

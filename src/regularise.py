@@ -52,7 +52,7 @@ def allignIDS(frame, wanted_ID, col, source_name):
     #col = what prediction col we pull from
 
     #reorder so all passengers are alligned
-    lookup = pandas.DataFrame({ID_COL, wanted_ID})
+    lookup = pandas.DataFrame({ID_COL: wanted_ID})
 
     merged = lookup.merge(frame[[ID_COL, col]], on=ID_COL, how="left", validate="one_to_one")
 
@@ -124,6 +124,9 @@ def loadLib():
             oof_by_model[col] = rankTo01(raw_oof)
             test_by_model[col] = rankTo01(raw_test)
             print(f"loaded col: {col}")
+
+    oof_table = pandas.DataFrame(oof_by_model)
+    test_table = pandas.DataFrame(test_by_model)
 
     #return coherent list
     return {"y": predictions, "fold": fold, "train_ids": train_ids, "test_ids": test_ids, "oof_table": oof_table, "test_table": test_table}
