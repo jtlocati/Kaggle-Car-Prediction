@@ -13,7 +13,7 @@ from tqdm import tqdm
 MODEL_NAME = "catboost"
 
 #True => train on only one fold
-QICK_CHK = True
+QICK_CHK = False
 
 USE_GPU = True
 SEED=42
