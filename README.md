@@ -1,5 +1,5 @@
 ## Super Sick Model Ensemble for Kaggle Competiton
-**Top 20%** - 666th place
+**Top 20%** - 666th place\n
 **Top 15%** - 500th place
 **Top 10%** - 333th place
 **Top 5%** - 167th place
