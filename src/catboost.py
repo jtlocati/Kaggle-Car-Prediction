@@ -58,3 +58,45 @@ for col in int_cols:
     X[new_col] = TRAIN_SET[col].astype(str)
     X_test[new_col] = TEST_SET[col].astype(str)
     cat_cols.append(new_col)
+
+
+#setup folds
+oof_pred = numpy.zeros(len(TRAIN_SET))
+test_pred = numpy.zeros(len(TEST_SET))
+#bundle features with bin in cotegoracle
+test_pool = Pool(X_test, cat_features=cat_cols)
+
+#TRAIN MODEL => train on 9, test on one fold
+
+TestLimit = True
+
+if TestLimit:
+    fold_to_run = [0]
+else:
+    fold_to_run = fold_numbers
+
+foldAUC=[]
+for fold_num in fold_to_run:
+    is_valid = (fold == fold_num)
+    is_train = ~is_valid
+
+    train_pool = Pool(X[is_train], CLASSIFICATION[is_train], cat_features=cat_cols)
+    valid_pool = Pool(X[is_valid], CLASSIFICATION[is_valid], cat_features=cat_cols)
+
+    if USE_GPU:
+        ask_type = "GPU"
+    else:
+        ask_type="CPU"
+
+    CATBOOST = CatBoostClassifier(
+        iterations=4000,            
+        learning_rate=0.08,        
+        depth=6,                    
+        l2_leaf_reg=5,              
+        eval_metric="AUC",          
+        early_stopping_rounds=200,  
+        random_seed=SEED,
+        task_type=ask_type,
+        thread_count=-1,            
+        verbose=250,                
+    )
