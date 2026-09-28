@@ -7,5 +7,6 @@ __pycache__
 data/raw/
 data/external/
 docs
+outputs/
 .ipynb_checkpoints/
 .kaggle
