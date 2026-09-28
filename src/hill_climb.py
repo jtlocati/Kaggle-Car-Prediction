@@ -73,7 +73,7 @@ def HillClimb(matrix, target, names):
 
         #try adding each model avalibe (17), then evaluate
         for i in range(model_count):
-            avalibe_model_belnd = (running_sum + matrix[:, i] / (total_picks +1))
+            avalibe_model_belnd = (running_sum + matrix[:, i]) / (total_picks + 1)
             candidate_auc = roc_auc_score(target, avalibe_model_belnd)
             if candidate_auc > best_model_auc:
                 best_model_auc = candidate_auc
@@ -108,17 +108,17 @@ for fold_number in tqdm(fold_nums, desc="Nested folds", unit="fold"):
     hillPrediction = oof_RegTable[test_rows] @ fold_weights
     equalPrediction = oof_RegTable[test_rows] @ Stage1
     HillAUC = roc_auc_score(predictions[test_rows], hillPrediction)
-    equalAUC = roc_auc_score(predictions[test_rows], Stage1)
+    equalAUC = roc_auc_score(predictions[test_rows], equalPrediction)
 
     nested_rows.append({"fold": fold_number, "equal_auc": equalAUC, "hill_auc": HillAUC, "change": HillAUC - equalAUC})
 
-    nested = pandas.DataFrame(nested_rows)
-    folds_won = int(nested("change" >0).sum())
-    mean_change = nested["change"].mean()
-    print("fold |   equal   |   hill    | change")
-    for _, row in nested.iterrows():
-        print(f"  {int(row['fold'])}  | {row['equal_auc']:.6f} | {row['hill_auc']:.6f} | {row['change']:+.7f}")
-    print(f"Hill climbing won {folds_won}/10 folds, mean change {mean_change:+.7f}")
+nested = pandas.DataFrame(nested_rows)
+folds_won = int((nested["change"] > 0).sum())
+mean_change = nested["change"].mean()
+print("fold |   equal   |   hill    | change")
+for _, row in nested.iterrows():
+    print(f"  {int(row['fold'])}  | {row['equal_auc']:.6f} | {row['hill_auc']:.6f} | {row['change']:+.7f}")
+print(f"Hill climbing won {folds_won}/10 folds, mean change {mean_change:+.7f}")
 
 #take decided weights and run them once on each row so we can use for the test set 
 
@@ -129,7 +129,7 @@ print(f"final weights")
 weightsFIN = []
 for name, weight in zip(model_names, final_weights):
     weightsFIN.append({"model": name, "weight": weight})
-weightTable = pandas.DataFrame(weightsFIN).sort_values("Weight", ascending=False)
+weightTable = pandas.DataFrame(weightsFIN).sort_values("weight", ascending=False)
 for _, row in weightTable.iterrows():
     if row["weight"] > 0:
         print(f"{row['weight']:.3f}  {row['model']}")
