@@ -1,6 +1,6 @@
 ## Super Sick Model Ensemble for Kaggle Competiton
-Current Kaggle standing: 460 / 3262 (top 14.1%)
-Public AUC: 0.94644 (OOF AUC: 0.946385)
+- Current Kaggle standing: **460 / 3262 (top 14.1%)**
+- Public AUC: 0.94644 (OOF AUC: 0.946385)
 
 ## Model Ensemble
 Blending 17 public models from two OOF libraries, plus 1 custom model.
