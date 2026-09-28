@@ -13,9 +13,9 @@ from tqdm import tqdm
 MODEL_NAME = "catboost"
 
 #True => train on only one fold
-QICK_CHK = False
+QICK_CHK = True
 
-USE_GPU = False
+USE_GPU = True
 SEED=42
 
 TRAIN_SET = pandas.read_csv(paths.RAW_DIR / "train.csv")
@@ -97,7 +97,8 @@ for fold_num in tqdm(fold_to_run, desc="Training folds", unit="fold"):
         random_seed=SEED,
         task_type=ask_type,
         thread_count=-1,            
-        verbose=250,                
+        verbose=250,     
+        metric_period=50           
     )
 
     CATBOOST.fit(train_pool, eval_set=valid_pool, use_best_model=True)
