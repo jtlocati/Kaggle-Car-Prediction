@@ -32,3 +32,13 @@ oof_RegTable = oof_table[model_names].to_numpy()
 test_RegTable = test_table[model_names].to_numpy()
 print(f"models regularised")
 
+#load prevous baseline from satge 1
+Satge1 = numpy.zeros(len(model_names))
+public_count = 0
+for i, name in enumerate(model_names):
+    if name not in COUS_MODELS:
+        Satge1[i] = 1.0
+        public_count += 1
+#ensure weighting = 1, each model = 0.06 weighting
+Stage1 = Satge1/public_count
+
