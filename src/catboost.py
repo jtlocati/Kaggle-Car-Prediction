@@ -125,3 +125,45 @@ test_frame.to_csv(paths.CATBOOST_MODED_DIR / f"{MODEL_NAME}_test.csv", index=Fal
 overallAUC = roc_auc_score(CLASSIFICATION, oof_pred)
 print(f"Results saved to {paths.CATBOOST_MODED_DIR}")
 
+#compare new results to old results
+library = loadLib()
+
+oof_table = library["oof_table"]
+
+#ensure that the rows will allighn
+if not (library["train_ids"] == TRAIN_SET[ID_COL].to_numpy()).all():
+    raise ValueError("Row order differs between train.csv and the OOF library.")
+
+#define prevous 17 
+
+public_names=[]
+for name in oof_table.columns:
+    if name != MODEL_NAME:
+        public_names.append(name)
+
+publicsum = numpy.zeros(len(TRAIN_SET))
+for name in public_names:
+    publicsum += oof_table[name].to_numpy()
+
+#define 17 and 18 blends
+blend_17 = publicsum / len(public_names)
+
+cat_ranks = rankdata(oof_pred) / len(oof_pred)
+
+BlendEightTeen = (publicsum + cat_ranks) / (len(public_names) + 1)
+
+correation = numpy.corrcoef(cat_ranks, blend_17)[0, 1]
+
+folds_won = 0
+print("fold | blend of 17 | blend of 18 | change")
+for fol_num in fold_numbers:
+    in_fold = (fold == fold_num)
+    auc_17 = roc_auc_score(CLASSIFICATION[in_fold], blend_17[in_fold])
+    auc_18 = roc_auc_score(CLASSIFICATION[in_fold], BlendEightTeen[in_fold])
+    if auc_18 > auc_17:
+        folds_won = folds_won + 1
+    print(f"  {fold_num}  |  {auc_17:.6f}   |  {auc_18:.6f}   | {auc_18 - auc_17:+.7f}")
+
+total_17 = roc_auc_score(CLASSIFICATION, blend_17)
+total_18 = roc_auc_score(CLASSIFICATION, BlendEightTeen)
+print(f"Overall: {total_17:.7f} -> {total_18:.7f} ({total_18 - total_17:+.7f}), won {folds_won}/10 folds")
