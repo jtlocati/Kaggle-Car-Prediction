@@ -38,6 +38,9 @@ SIX_VIEWS_TABLES = {
     ],
 }
 
+COUS_MODELS = [ "catboost" ]
+
+
 #regularise each models prediction to be the rank / num_rows, this allows us to properly evaluate then rank our models
 def rankTo01(values):
     #establish the two vars then return
@@ -124,6 +127,29 @@ def loadLib():
             oof_by_model[col] = rankTo01(raw_oof)
             test_by_model[col] = rankTo01(raw_test)
             print(f"loaded col: {col}")
+    #refularise file format + scoring metrics for catboost
+
+    for model in COUS_MODELS:
+        oof_path = paths.CATBOOST_MODED_DIR / f"{model}_oof.csv"
+        test_path = paths.CATBOOST_MODED_DIR / f"{model}.test.csv"
+
+        if oof_path.exists() == False or test_path.exists() == False:
+            print(f"SKIPPED: {model}: NOT trained")
+            continue
+
+        oof_frame = pandas.read_csv(oof_path)
+        test_frame = pandas.read_csv(test_path)
+
+        preds_oof = SlimToPredictions(oof_frame, oof_path.name)
+        pred_test = SlimToPredictions(test_frame, test_path.name)
+
+        raw_oof = allignIDS(oof_frame, train_ids, preds_oof, oof_path.name)
+        raw_test = allignIDS(test_frame, test_ids, pred_test, test_path.name)
+
+        oof_by_model[model] = rankTo01(raw_oof)
+        test_by_model[model] = rankTo01(raw_test)
+        print(f"loaded {model}")
+    
 
     oof_table = pandas.DataFrame(oof_by_model)
     test_table = pandas.DataFrame(test_by_model)
