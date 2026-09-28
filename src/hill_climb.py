@@ -94,3 +94,28 @@ def HillClimb(matrix, target, names):
     #ensures model setup that is best gets weightd prperlt with the amount of occurences = 1
     weights = pick_counts / pick_counts.sum()
     return weights
+
+#nested check => leans weights on 10 folds - f, score on fold f
+
+nested_rows = []
+for fold_number in tqdm(fold_nums, desc="Nested folds", unit="fold"):
+    learn_rows = (fold != fold_number)
+    test_rows = (fold == fold_number)
+
+    fold_weights = HillClimb(oof_RegTable[learn_rows], predictions[learn_rows], model_names)
+
+    #take the 18 predictions, multipy by weughts, everage, then return
+    hillPrediction = oof_RegTable[test_rows] @ fold_weights
+    equalPrediction = oof_RegTable[test_rows] @ Stage1
+    HillAUC = roc_auc_score(predictions[test_rows], hillPrediction)
+    equalAUC = roc_auc_score(predictions[test_rows], Stage1)
+
+    nested_rows.append({"fold": fold_number, "equal_auc": equalAUC, "hill_auc": HillAUC, "change": HillAUC - equalAUC})
+
+    nested = pandas.DataFrame(nested_rows)
+    folds_won = int(nested("change" >0).sum())
+    mean_change = nested["change"].mean()
+    print("fold |   equal   |   hill    | change")
+    for _, row in nested.iterrows():
+        print(f"  {int(row['fold'])}  | {row['equal_auc']:.6f} | {row['hill_auc']:.6f} | {row['change']:+.7f}")
+    print(f"Hill climbing won {folds_won}/10 folds, mean change {mean_change:+.7f}")
