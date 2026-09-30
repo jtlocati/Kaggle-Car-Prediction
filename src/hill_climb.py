@@ -4,7 +4,7 @@ import pandas
 from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 from src import paths
-from src.regularise import COUS_MODELS, ID_COL, loadLib, TARGET_COL
+from src.regularise import COUS_MODELS, EXTRA_MODELS, ID_COL, loadLib, TARGET_COL
 
 #Constants for Climb
 #disasllow a model to be selected more than MAX_STEPS times
@@ -36,11 +36,18 @@ print(f"models regularised")
 Satge1 = numpy.zeros(len(model_names))
 public_count = 0
 for i, name in enumerate(model_names):
-    if name not in COUS_MODELS:
+    if name not in COUS_MODELS and name not in EXTRA_MODELS:
         Satge1[i] = 1.0
         public_count += 1
 #ensure weighting = 1, each model = 0.06 weighting
 Stage1 = Satge1/public_count
+
+#stage 3 weights (submission_hill.csv), the new blend has to beat THIS not just the equal blend
+STAGE3_WEIGHTS = {"ensemble": 0.4, "01_blend": 0.2, "G_realmlp_3seed": 0.2, "xgb_te_10f": 0.2}
+Stage3 = numpy.zeros(len(model_names))
+for i, name in enumerate(model_names):
+    if name in STAGE3_WEIGHTS:
+        Stage3[i] = STAGE3_WEIGHTS[name] #all other models stay 0
 
 #HILL CLIMB
 #Takes the matrix of models anked by prediction and the targets => an array of applyed weights for each model
@@ -109,8 +116,11 @@ for fold_number in tqdm(fold_nums, desc="Nested folds", unit="fold"):
     equalPrediction = oof_RegTable[test_rows] @ Stage1
     HillAUC = roc_auc_score(predictions[test_rows], hillPrediction)
     equalAUC = roc_auc_score(predictions[test_rows], equalPrediction)
+    stage3Prediction = oof_RegTable[test_rows] @ Stage3 #the blend already submitted
+    stage3AUC = roc_auc_score(predictions[test_rows], stage3Prediction)
 
-    nested_rows.append({"fold": fold_number, "equal_auc": equalAUC, "hill_auc": HillAUC, "change": HillAUC - equalAUC})
+    nested_rows.append({"fold": fold_number, "equal_auc": equalAUC, "stage3_auc": stage3AUC, "hill_auc": HillAUC,
+                        "change": HillAUC - equalAUC, "vs_stage3": HillAUC - stage3AUC})
 
 nested = pandas.DataFrame(nested_rows)
 folds_won = int((nested["change"] > 0).sum())
@@ -119,6 +129,11 @@ print("fold |   equal   |   hill    | change")
 for _, row in nested.iterrows():
     print(f"  {int(row['fold'])}  | {row['equal_auc']:.6f} | {row['hill_auc']:.6f} | {row['change']:+.7f}")
 print(f"Hill climbing won {folds_won}/10 folds, mean change {mean_change:+.7f}")
+
+#stage 4 check: does the bigger pool beat the blend already submitted?
+folds_won_s3 = int((nested["vs_stage3"] > 0).sum())
+mean_vs_s3 = nested["vs_stage3"].mean()
+print(f"vs Stage 3 blend: won {folds_won_s3}/10 folds, mean change {mean_vs_s3:+.7f}")
 
 #take decided weights and run them once on each row so we can use for the test set 
 
@@ -145,11 +160,11 @@ print("(this hill number is optimistic; trust the nested result above)")
 hill_test = test_RegTable @ final_weights   # each test row: weighted sum of the models' ranks
 
 paths.OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-pandas.DataFrame({ID_COL: library["test_ids"], TARGET_COL: hill_test}).to_csv(paths.OUTPUTS_DIR / "submission_hill.csv", index=False)
-weightTable.to_csv(paths.OUTPUTS_DIR / "stage3_weights.csv", index=False)
-nested.to_csv(paths.OUTPUTS_DIR / "stage3_nested.csv", index=False)
+pandas.DataFrame({ID_COL: library["test_ids"], TARGET_COL: hill_test}).to_csv(paths.OUTPUTS_DIR / "submission_hill_big.csv", index=False)
+weightTable.to_csv(paths.OUTPUTS_DIR / "stage4_weights.csv", index=False)
+nested.to_csv(paths.OUTPUTS_DIR / "stage4_nested.csv", index=False)
 
-if folds_won >= FOLDS_TO_WIN and mean_change > 0:
-    print(f"\nVERDICT: hill climbing passed ({folds_won}/10 folds). Submit outputs/submission_hill.csv")
+if folds_won_s3 >= FOLDS_TO_WIN and mean_vs_s3 > 0:
+    print(f"\nVERDICT: beats Stage 3 ({folds_won_s3}/10 folds). Submit outputs/submission_hill_big.csv")
 else:
-    print(f"\nVERDICT: hill climbing did NOT pass ({folds_won}/10 folds). Keep the Stage 1 equal blend.")
+    print(f"\nVERDICT: does NOT beat Stage 3 ({folds_won_s3}/10 folds). Keep submission_hill.csv")
