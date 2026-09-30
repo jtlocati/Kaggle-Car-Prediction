@@ -40,6 +40,13 @@ SIX_VIEWS_TABLES = {
 
 COUS_MODELS = [ "catboost" ]
 
+#stage 4: two public models that see the data differently from the other 17
+#name -> (oof file, oof col, test file, test col), paths inside data/external
+EXTRA_MODELS = {
+    "blamerx": ("blamerx/oof.csv", "pred", "blamerx/submission.csv", "Will_Buy_EV"),
+    "heuljax": ("heuljax/oof.csv", "oof_pred", "heuljax/test.csv", "test_pred"),
+}
+
 
 #regularise each models prediction to be the rank / num_rows, this allows us to properly evaluate then rank our models
 def rankTo01(values):
@@ -150,6 +157,23 @@ def loadLib():
         test_by_model[model] = rankTo01(raw_test)
         print(f"loaded {model}")
     
+
+    #stage 4: load the extra public models, same allign + rank as every other model
+    for model, files in EXTRA_MODELS.items():
+        oof_file = files[0]   #train row predictions
+        oof_col = files[1]    #col that holds them
+        test_file = files[2]  #test row predictions
+        test_col = files[3]   #col that holds them
+
+        oof_frame = pandas.read_csv(paths.EXTERNAL_DIR / oof_file)
+        test_frame = pandas.read_csv(paths.EXTERNAL_DIR / test_file)
+
+        raw_oof = allignIDS(oof_frame, train_ids, oof_col, oof_file)
+        raw_test = allignIDS(test_frame, test_ids, test_col, test_file)
+
+        oof_by_model[model] = rankTo01(raw_oof)
+        test_by_model[model] = rankTo01(raw_test)
+        print(f"loaded extra: {model}")
 
     oof_table = pandas.DataFrame(oof_by_model)
     test_table = pandas.DataFrame(test_by_model)
