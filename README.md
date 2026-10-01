@@ -8,8 +8,7 @@ A rank-space ensemble of 19 out-of-fold (OOF) models, weighted with a nested hil
 |---|---|---|
 | **Private leaderboard (final)** | **🥉 270 / 3,576 (top 7.6%)** | **0.94546** |
 | Public leaderboard (final) | 515 / 3,576 | 0.94649 |
-| Nested CV, final blend | | 0.946462 OOF (10/10 folds over the Stage 3 blend) |
-| Winning private score | 1 | 0.94602 |
+
 
 Progress by stage:
 
