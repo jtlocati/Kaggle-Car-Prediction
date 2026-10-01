@@ -119,8 +119,7 @@ for fold_number in tqdm(fold_nums, desc="Nested folds", unit="fold"):
     stage3Prediction = oof_RegTable[test_rows] @ Stage3 #the blend already submitted
     stage3AUC = roc_auc_score(predictions[test_rows], stage3Prediction)
 
-    nested_rows.append({"fold": fold_number, "equal_auc": equalAUC, "stage3_auc": stage3AUC, "hill_auc": HillAUC,
-                        "change": HillAUC - equalAUC, "vs_stage3": HillAUC - stage3AUC})
+    nested_rows.append({"fold": fold_number, "equal_auc": equalAUC, "stage3_auc": stage3AUC, "hill_auc": HillAUC,"change": HillAUC - equalAUC, "vs_stage3": HillAUC - stage3AUC})
 
 nested = pandas.DataFrame(nested_rows)
 folds_won = int((nested["change"] > 0).sum())
