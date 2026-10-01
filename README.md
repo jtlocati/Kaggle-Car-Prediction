@@ -1,6 +1,6 @@
 # Kaggle Playground S6E9: Predicting Electric Vehicle Purchases
 
-A rank-space ensemble of 19 out-of-fold (OOF) models, weighted with a nested hill climb. It finished **270th of 3,576 teams (top 7.6%)** on the private leaderboard, up 245 places from its final public rank. Every blending decision was made on honest cross-validation, never on the public leaderboard, and that held up when the hidden 80% of the test set was revealed.
+A rank-space ensemble chosen from 20 out-of-fold (OOF) candidate models, weighted with a nested hill climb. It finished **270th of 3,576 teams (top 7.6%)** on the private leaderboard, up 245 places from its final public rank. Every blending decision was made on honest cross-validation, never on the public leaderboard, and that held up when the hidden 80% of the test set was revealed.
 
 ## Results
 
@@ -8,6 +8,9 @@ A rank-space ensemble of 19 out-of-fold (OOF) models, weighted with a nested hil
 |---|---|---|
 | **Private leaderboard - FINAL** | **🥉 270 / 3,576 (top 7.6%)** | **0.94546** |
 | Public leaderboard | 515 / 3,576 | 0.94649 |
+
+![Flow chart](C:\dev\Kaggle-Car-Prediction\README_components\s6e9_flowchart_linkedin_REAL.png)
+
 
 
 Progress by stage:
