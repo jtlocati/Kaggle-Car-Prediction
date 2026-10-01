@@ -6,8 +6,8 @@ A rank-space ensemble of 19 out-of-fold (OOF) models, weighted with a nested hil
 
 | Cycle | Rank | Score (ROC AUC) |
 |---|---|---|
-| **Private leaderboard (final)** | **🥉 270 / 3,576 (top 7.6%)** | **0.94546** |
-| Public leaderboard (final) | 515 / 3,576 | 0.94649 |
+| **Private leaderboard - FINAL** | **🥉 270 / 3,576 (top 7.6%)** | **0.94546** |
+| Public leaderboard | 515 / 3,576 | 0.94649 |
 
 
 Progress by stage:
