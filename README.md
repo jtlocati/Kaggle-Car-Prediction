@@ -89,37 +89,6 @@ data/             competition data and public OOF libraries (not committed)
 outputs/          submissions and fold reports (not committed)
 ```
 
-## How to run
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
-
-Competition data (join the competition first, then download into `data/raw/`):
-
-```powershell
-kaggle competitions download -c playground-series-s6e9 -p data\raw
-```
-
-Public OOF sources (into `data/external/`):
-
-```powershell
-kaggle datasets download -d najiama/s6e9-oof -p data\external\s6e9-oof --unzip
-kaggle datasets download -d megayak/s6e9-six-feature-views-oof-library -p data\external\six-views --unzip
-kaggle kernels output blamerx/s6e9-xgboost-window-encodings-0-946-cv -p data\external\blamerx
-kaggle kernels output heuljax/kps6e09-xgb-sample -p data\external\heuljax
-```
-
-heuljax ships `.parquet` files; they were converted once to `data/external/heuljax/oof.csv` (`id, oof_pred`) and `test.csv` (`id, test_pred`) so no extra package is needed.
-
-Then:
-
-```powershell
-python -m src.catboost      # optional: trains the CatBoost candidate (about 30 min on CPU)
-python -m src.hill_climb    # about 10 min on CPU, writes outputs/submission_hill_big.csv
-```
 
 ## Credits
 
