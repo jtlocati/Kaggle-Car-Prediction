@@ -9,11 +9,6 @@ A rank-space ensemble chosen from 20 out-of-fold (OOF) candidate models, weighte
 | **Private leaderboard - FINAL** | **🥉 270 / 3,576 (top 7.6%)** | **0.94546** |
 | Public leaderboard | 515 / 3,576 | 0.94649 |
 
-![Flow chart](README_components/s6e9_flowchart_linkedin_REAL.png)
-
-
-
-
 Progress by stage:
 
 | Stage | What changed | OOF AUC | Public | Nested check |
@@ -27,6 +22,8 @@ Progress by stage:
 Final selected submissions: Stage 4 (`submission_hill_big.csv`) and Stage 3 (`submission_hill.csv`) as the hedge.
 
 ## Approach
+![Flow chart](README_components/s6e9_flowchart_linkedin_REAL.png)
+
 
 ### The idea
 
